@@ -25,8 +25,6 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { BoardColumn } from "@/components/board/board-column";
 import { TaskCardView } from "@/components/board/task-card";
 import { useBoardStore } from "@/lib/stores/board-store";
-import { useUiStore } from "@/lib/stores/ui-store";
-import { ApiRequestError } from "@/lib/http";
 import type { TableDetail, Task } from "@/lib/types";
 
 /** columnId → task ids in display order. */
@@ -62,7 +60,6 @@ const collisionDetection: CollisionDetection = (args) => {
 
 export function KanbanBoard({ table, after }: { table: TableDetail; after?: ReactNode }) {
   const moveTask = useBoardStore((s) => s.moveTask);
-  const showToast = useUiStore((s) => s.showToast);
   const dndId = useId();
 
   // While dragging, the board renders this local layout; the store is only
@@ -172,13 +169,7 @@ export function KanbanBoard({ table, after }: { table: TableDetail; after?: Reac
     const index = ids.indexOf(String(active.id));
     if (columnId === start.columnId && index === start.index) return;
 
-    moveTask(String(active.id), columnId, index).catch((error) => {
-      showToast(
-        error instanceof ApiRequestError
-          ? `No se pudo mover la tarea: ${error.message}`
-          : "No se pudo mover la tarea. Revisa tu conexión.",
-      );
-    });
+    moveTask(String(active.id), columnId, index);
   };
 
   const titleOf = (id: UniqueIdentifier) => tasksById.get(String(id))?.title ?? "la tarea";
