@@ -54,6 +54,9 @@ export const UserIcon = (p: IconProps) => (
 export const TagIcon = (p: IconProps) => (
   <Icon {...p}><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z" /><circle cx="7.5" cy="7.5" r="1" /></Icon>
 );
+export const PaletteIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M12 22a10 10 0 1 1 10-10c0 2.2-1.8 3.5-4 3.5h-2a2 2 0 0 0-1.5 3.3A2 2 0 0 1 12 22Z" /><circle cx="7.5" cy="10.5" r="1" /><circle cx="12" cy="7.5" r="1" /><circle cx="16.5" cy="10.5" r="1" /></Icon>
+);
 export const ColumnsIcon = (p: IconProps) => (
   <Icon {...p}><rect x="3" y="3" width="5" height="18" rx="1.5" /><rect x="10" y="3" width="5" height="12" rx="1.5" /><rect x="17" y="3" width="4" height="8" rx="1.5" /></Icon>
 );

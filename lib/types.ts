@@ -1,6 +1,7 @@
 // Shapes returned by the API and shared with the client.
 
-export const TAG_COLORS = [
+/** Palette shared by tag pills and the accent color of tables, columns and tasks. */
+export const COLORS = [
   "gray",
   "red",
   "orange",
@@ -11,7 +12,7 @@ export const TAG_COLORS = [
   "pink",
 ] as const;
 
-export type TagColor = (typeof TAG_COLORS)[number];
+export type Color = (typeof COLORS)[number];
 
 export type PublicUser = {
   id: string;
@@ -30,6 +31,7 @@ export type TableSummary = {
   id: string;
   title: string;
   description: string;
+  color: Color | null;
   createdAt: string;
   updatedAt: string;
   columnCount: number;
@@ -41,7 +43,8 @@ export type Task = {
   title: string;
   description: string;
   tagLabel: string | null;
-  tagColor: TagColor | null;
+  tagColor: Color | null;
+  color: Color | null;
   position: number;
   columnId: string;
   author: UserRef;
@@ -54,6 +57,7 @@ export type Column = {
   id: string;
   title: string;
   description: string;
+  color: Color | null;
   position: number;
   tableId: string;
   tasks: Task[];

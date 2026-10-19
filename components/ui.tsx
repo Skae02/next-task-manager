@@ -9,8 +9,8 @@ import {
   type TextareaHTMLAttributes,
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { XIcon } from "@/components/icons";
-import type { TagColor } from "@/lib/types";
+import { CheckIcon, XIcon } from "@/components/icons";
+import { COLORS, type Color } from "@/lib/types";
 
 export function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -120,25 +120,90 @@ export function FormError({ message }: { message?: string | null }) {
 
 /* ----------------------------------- Tag ----------------------------------- */
 
-export const tagStyles: Record<TagColor, { pill: string; dot: string }> = {
-  gray: { pill: "bg-zinc-500/12 text-zinc-600 dark:text-zinc-300", dot: "bg-zinc-400" },
-  red: { pill: "bg-red-500/12 text-red-600 dark:text-red-400", dot: "bg-red-500" },
-  orange: { pill: "bg-orange-500/12 text-orange-600 dark:text-orange-400", dot: "bg-orange-500" },
-  yellow: { pill: "bg-amber-400/15 text-amber-700 dark:text-amber-300", dot: "bg-amber-400" },
-  green: { pill: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-400", dot: "bg-emerald-500" },
-  blue: { pill: "bg-blue-500/12 text-blue-600 dark:text-blue-400", dot: "bg-blue-500" },
-  purple: { pill: "bg-violet-500/12 text-violet-600 dark:text-violet-400", dot: "bg-violet-500" },
-  pink: { pill: "bg-pink-500/12 text-pink-600 dark:text-pink-400", dot: "bg-pink-500" },
+/**
+ * Classes per palette color. Written out in full so Tailwind can find them.
+ * - `pill`: tinted background and text (tags, badges)
+ * - `dot`: solid accent (bars, dots, swatches)
+ * - `wash`: start of a faint gradient (pair with `bg-linear-to-*` and `to-transparent`)
+ * - `border`: top border color (pair with a `border-t-*` width)
+ */
+export const colorStyles: Record<Color, { pill: string; dot: string; wash: string; border: string }> = {
+  gray: { pill: "bg-zinc-500/12 text-zinc-600 dark:text-zinc-300", dot: "bg-zinc-400", wash: "from-zinc-500/10", border: "border-t-zinc-400" },
+  red: { pill: "bg-red-500/12 text-red-600 dark:text-red-400", dot: "bg-red-500", wash: "from-red-500/10", border: "border-t-red-500" },
+  orange: { pill: "bg-orange-500/12 text-orange-600 dark:text-orange-400", dot: "bg-orange-500", wash: "from-orange-500/10", border: "border-t-orange-500" },
+  yellow: { pill: "bg-amber-400/15 text-amber-700 dark:text-amber-300", dot: "bg-amber-400", wash: "from-amber-400/12", border: "border-t-amber-400" },
+  green: { pill: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-400", dot: "bg-emerald-500", wash: "from-emerald-500/10", border: "border-t-emerald-500" },
+  blue: { pill: "bg-blue-500/12 text-blue-600 dark:text-blue-400", dot: "bg-blue-500", wash: "from-blue-500/10", border: "border-t-blue-500" },
+  purple: { pill: "bg-violet-500/12 text-violet-600 dark:text-violet-400", dot: "bg-violet-500", wash: "from-violet-500/10", border: "border-t-violet-500" },
+  pink: { pill: "bg-pink-500/12 text-pink-600 dark:text-pink-400", dot: "bg-pink-500", wash: "from-pink-500/10", border: "border-t-pink-500" },
 };
 
-export function TagPill({ label, color }: { label: string | null; color: TagColor | null }) {
+export const colorLabels: Record<Color, string> = {
+  gray: "Gris",
+  red: "Rojo",
+  orange: "Naranja",
+  yellow: "Amarillo",
+  green: "Verde",
+  blue: "Azul",
+  purple: "Morado",
+  pink: "Rosa",
+};
+
+export function TagPill({ label, color }: { label: string | null; color: Color | null }) {
   if (!label) return null;
-  const style = tagStyles[color ?? "gray"];
+  const style = colorStyles[color ?? "gray"];
   return (
     <span className={cx("inline-flex h-5 items-center gap-1.5 rounded-full px-2 text-[11.5px] font-medium", style.pill)}>
       <span className={cx("size-1.5 rounded-full", style.dot)} />
       {label}
     </span>
+  );
+}
+
+/* ------------------------------- ColorPicker ------------------------------- */
+
+type ColorPickerProps = {
+  value: Color | null;
+  onChange: (color: Color | null) => void;
+  label: string;
+  /** Adds a "no color" option before the palette. */
+  allowNone?: boolean;
+};
+
+export function ColorPicker({ value, onChange, label, allowNone }: ColorPickerProps) {
+  const swatch =
+    "flex size-6 items-center justify-center rounded-full outline-none transition-transform hover:scale-110 focus-visible:ring-4 focus-visible:ring-ring";
+  const selected = "ring-2 ring-offset-2 ring-line-strong ring-offset-surface";
+  return (
+    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={label}>
+      {allowNone && (
+        <button
+          type="button"
+          role="radio"
+          aria-checked={value === null}
+          aria-label="Sin color"
+          title="Sin color"
+          onClick={() => onChange(null)}
+          className={cx(swatch, "border border-dashed border-line-strong text-muted", value === null && selected)}
+        >
+          {value === null && <CheckIcon size={12} strokeWidth={3} />}
+        </button>
+      )}
+      {COLORS.map((color) => (
+        <button
+          key={color}
+          type="button"
+          role="radio"
+          aria-checked={value === color}
+          aria-label={colorLabels[color]}
+          title={colorLabels[color]}
+          onClick={() => onChange(color)}
+          className={cx(swatch, "text-white", colorStyles[color].dot, value === color && selected)}
+        >
+          {value === color && <CheckIcon size={12} strokeWidth={3} />}
+        </button>
+      ))}
+    </div>
   );
 }
 

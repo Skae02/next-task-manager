@@ -3,17 +3,18 @@
 import { create } from "zustand";
 import { api, ApiRequestError } from "@/lib/http";
 import { useUiStore } from "@/lib/stores/ui-store";
-import type { Column, TableDetail, TableSummary, TagColor, Task } from "@/lib/types";
+import type { Color, Column, TableDetail, TableSummary, Task } from "@/lib/types";
 
 type Status = "idle" | "loading" | "ready" | "error";
 
-export type TableInput = { title: string; description: string };
+export type TableInput = { title: string; description: string; color: Color | null };
 export type ColumnInput = TableInput;
 export type TaskInput = {
   title: string;
   description: string;
   tagLabel: string | null;
-  tagColor: TagColor | null;
+  tagColor: Color | null;
+  color: Color | null;
   assigneeId: string | null;
   columnId?: string;
 };

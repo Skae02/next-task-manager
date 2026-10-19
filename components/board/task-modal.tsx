@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { PencilIcon, ColumnsIcon, TagIcon, TrashIcon, UserIcon } from "@/components/icons";
-import { Avatar, Button, Modal, TagPill } from "@/components/ui";
+import { PencilIcon, ColumnsIcon, PaletteIcon, TagIcon, TrashIcon, UserIcon } from "@/components/icons";
+import { Avatar, Button, Modal, TagPill, colorLabels, colorStyles, cx } from "@/components/ui";
 import { findTask, useBoardStore } from "@/lib/stores/board-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import type { UserRef } from "@/lib/types";
@@ -33,7 +33,12 @@ export function TaskModal() {
       {found && (
         <div className="pt-5">
           <div className="mb-1 flex items-center gap-1.5 text-[12px] text-muted">
-            <ColumnsIcon size={13} /> {found.column.title}
+            {found.column.color ? (
+              <span className={cx("size-2 rounded-full", colorStyles[found.column.color].dot)} />
+            ) : (
+              <ColumnsIcon size={13} />
+            )}
+            {found.column.title}
           </div>
           <h2 className="text-[20px] font-semibold leading-snug tracking-tight">{found.task.title}</h2>
 
@@ -50,6 +55,16 @@ export function TaskModal() {
             <dl className="flex flex-col gap-3.5 rounded-xl bg-surface-2 p-3.5 text-[13px] sm:border sm:border-line">
               <Detail icon={<TagIcon size={13} />} label="Etiqueta">
                 {found.task.tagLabel ? <TagPill label={found.task.tagLabel} color={found.task.tagColor} /> : <Empty />}
+              </Detail>
+              <Detail icon={<PaletteIcon size={13} />} label="Color">
+                {found.task.color ? (
+                  <span className="flex items-center gap-2">
+                    <span className={cx("size-3 rounded-full", colorStyles[found.task.color].dot)} />
+                    {colorLabels[found.task.color]}
+                  </span>
+                ) : (
+                  <Empty />
+                )}
               </Detail>
               <Detail icon={<UserIcon size={13} />} label="Autor">
                 <Person user={found.task.author} />

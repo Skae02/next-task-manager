@@ -6,7 +6,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { ActionMenu } from "@/components/app/menu";
 import { PencilIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import { SortableTaskCard } from "@/components/board/task-card";
-import { cx } from "@/components/ui";
+import { colorStyles, cx } from "@/components/ui";
 import { useBoardStore } from "@/lib/stores/board-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import type { Column, Task } from "@/lib/types";
@@ -26,19 +26,32 @@ export function BoardColumn({ column, tasks, isDropTarget }: Props) {
   const { openEntityDialog, askConfirm } = useUiStore();
   const newTaskHref = `/tables/${column.tableId}/columns/${column.id}/tasks/new`;
   const count = tasks.length;
+  const accent = column.color ? colorStyles[column.color] : null;
 
   return (
     <section
       className={cx(
         "flex max-h-[calc(100dvh-14rem)] w-72 shrink-0 flex-col rounded-2xl border transition-colors",
         isDropTarget ? "border-accent/50 bg-accent-soft/40" : "border-line bg-surface-2/60",
+        accent && ["border-t-[3px]", accent.border].join(" "),
       )}
     >
-      <header className="flex items-start justify-between gap-2 px-3 pt-3 pb-2">
+      <header
+        className={cx(
+          "flex items-start justify-between gap-2 px-3 pt-3 pb-2",
+          // Inner radius of the column (rounded-2xl minus the 3px top border).
+          accent && ["rounded-t-[13px] bg-linear-to-b to-transparent", accent.wash].join(" "),
+        )}
+      >
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="truncate text-[13.5px] font-semibold">{column.title}</h2>
-            <span className="rounded-full bg-sunken px-1.5 text-[11.5px] font-medium text-muted tabular-nums">
+            <span
+              className={cx(
+                "rounded-full px-1.5 text-[11.5px] font-medium tabular-nums",
+                accent ? accent.pill : "bg-sunken text-muted",
+              )}
+            >
               {count}
             </span>
           </div>

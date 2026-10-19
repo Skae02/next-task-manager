@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { motion } from "motion/react";
 import { ActionMenu } from "@/components/app/menu";
 import { BoardIcon, PencilIcon, PlusIcon, TrashIcon } from "@/components/icons";
-import { Button, Spinner } from "@/components/ui";
+import { Button, Spinner, colorStyles, cx } from "@/components/ui";
 import { useBoardStore } from "@/lib/stores/board-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import type { TableSummary } from "@/lib/types";
@@ -89,9 +89,15 @@ const dateFormat = new Intl.DateTimeFormat("es", { day: "numeric", month: "short
 function TableCard({ table }: { table: TableSummary }) {
   const deleteTable = useBoardStore((s) => s.deleteTable);
   const { openEntityDialog, askConfirm } = useUiStore();
+  const accent = table.color ? colorStyles[table.color] : null;
 
   return (
-    <div className="group relative flex min-h-36 flex-col rounded-2xl border border-line bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-line-strong hover:shadow-md">
+    <div
+      className={cx(
+        "group relative flex min-h-36 flex-col rounded-2xl border border-line bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-line-strong hover:shadow-md",
+        accent && ["border-t-[3px] bg-linear-to-b to-transparent to-60%", accent.border, accent.wash].join(" "),
+      )}
+    >
       <Link href={`/tables/${table.id}`} className="absolute inset-0 rounded-2xl outline-none focus-visible:ring-4 focus-visible:ring-ring" aria-label={table.title} />
       <div className="pointer-events-none flex items-start justify-between gap-2">
         <h3 className="line-clamp-1 text-[15px] font-semibold">{table.title}</h3>

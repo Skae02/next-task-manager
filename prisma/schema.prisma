@@ -29,6 +29,7 @@ model Table {
   id          String   @id @default(cuid())
   title       String
   description String   @default("")
+  color       String?
   ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -44,6 +45,7 @@ model Column {
   id          String   @id @default(cuid())
   title       String
   description String   @default("")
+  color       String?
   position    Int      @default(0)
   tableId     String
   createdAt   DateTime @default(now())
@@ -62,6 +64,7 @@ model Task {
   description String   @default("")
   tagLabel    String?
   tagColor    String?
+  color       String?
   position    Int      @default(0)
   columnId    String
   authorId    String

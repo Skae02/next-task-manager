@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { CheckIcon, ChevronLeftIcon } from "@/components/icons";
-import { Avatar, Button, Field, FormError, Input, Spinner, TagPill, Textarea, cx, tagStyles } from "@/components/ui";
+import { ChevronLeftIcon } from "@/components/icons";
+import { Avatar, Button, ColorPicker, Field, FormError, Input, Spinner, TagPill, Textarea, cx } from "@/components/ui";
 import { findTask, useBoardStore } from "@/lib/stores/board-store";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useForm } from "@/lib/use-form";
-import { TAG_COLORS, type TableDetail, type TagColor } from "@/lib/types";
+import type { Color, TableDetail } from "@/lib/types";
 
 type Props = { tableId: string } & ({ mode: "create"; columnId: string } | { mode: "edit"; taskId: string });
 
@@ -73,6 +73,8 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
     description: task?.description ?? "",
     tagLabel: task?.tagLabel ?? "",
     tagColor: (task?.tagColor ?? "blue") as string,
+    // "" means no color: the form only holds strings.
+    color: (task?.color ?? "") as string,
     columnId,
     assigneeId: task ? (task.assignee?.id ?? "") : (user?.id ?? ""),
   });
@@ -84,7 +86,8 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
       title: v.title,
       description: v.description,
       tagLabel: hasTag ? v.tagLabel : null,
-      tagColor: hasTag ? (v.tagColor as TagColor) : null,
+      tagColor: hasTag ? (v.tagColor as Color) : null,
+      color: (v.color || null) as Color | null,
       assigneeId: v.assigneeId || null,
     };
     const saved = task
@@ -162,29 +165,26 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
               <div className="flex items-center gap-3">
                 <Input id={id} placeholder="p. ej. Diseño, Bug, Urgente" maxLength={30} {...bind("tagLabel")} />
                 <span className="shrink-0">
-                  <TagPill label={values.tagLabel.trim() || null} color={values.tagColor as TagColor} />
+                  <TagPill label={values.tagLabel.trim() || null} color={values.tagColor as Color} />
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Color de la etiqueta">
-                {TAG_COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    role="radio"
-                    aria-checked={values.tagColor === color}
-                    aria-label={color}
-                    onClick={() => set({ tagColor: color })}
-                    className={cx(
-                      "flex size-6 items-center justify-center rounded-full text-white outline-none transition-transform hover:scale-110 focus-visible:ring-4 focus-visible:ring-ring",
-                      tagStyles[color].dot,
-                      values.tagColor === color && "ring-2 ring-offset-2 ring-line-strong ring-offset-surface",
-                    )}
-                  >
-                    {values.tagColor === color && <CheckIcon size={12} strokeWidth={3} />}
-                  </button>
-                ))}
-              </div>
+              <ColorPicker
+                label="Color de la etiqueta"
+                value={values.tagColor as Color}
+                onChange={(color) => color && set({ tagColor: color })}
+              />
             </div>
+          )}
+        </Field>
+
+        <Field label="Color de la tarea" error={fieldErrors.color} hint="Opcional, resalta la tarjeta en el tablero">
+          {() => (
+            <ColorPicker
+              label="Color de la tarea"
+              allowNone
+              value={(values.color || null) as Color | null}
+              onChange={(color) => set({ color: color ?? "" })}
+            />
           )}
         </Field>
 

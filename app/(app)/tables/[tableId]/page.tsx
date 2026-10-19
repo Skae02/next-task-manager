@@ -7,7 +7,7 @@ import { ActionMenu } from "@/components/app/menu";
 import { KanbanBoard } from "@/components/board/kanban-board";
 import { TaskModal } from "@/components/board/task-modal";
 import { ChevronLeftIcon, ColumnsIcon, PencilIcon, PlusIcon, TrashIcon } from "@/components/icons";
-import { Button, Spinner } from "@/components/ui";
+import { Button, Spinner, colorLabels, colorStyles, cx } from "@/components/ui";
 import { useBoardStore } from "@/lib/stores/board-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 
@@ -50,7 +50,15 @@ export default function TablePage() {
         <>
           <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 max-w-2xl">
-              <h1 className="text-[26px] font-semibold tracking-tight">{table.title}</h1>
+              <h1 className="flex items-center gap-2.5 text-[26px] font-semibold tracking-tight">
+                {table.color && (
+                  <span
+                    title={colorLabels[table.color]}
+                    className={cx("size-3 shrink-0 rounded-full", colorStyles[table.color].dot)}
+                  />
+                )}
+                {table.title}
+              </h1>
               {table.description && <p className="mt-1 whitespace-pre-wrap text-muted">{table.description}</p>}
             </div>
             <div className="flex items-center gap-2">

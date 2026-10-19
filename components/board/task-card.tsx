@@ -3,7 +3,7 @@
 import type { HTMLAttributes, KeyboardEvent, Ref } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Avatar, TagPill, cx } from "@/components/ui";
+import { Avatar, TagPill, colorStyles, cx } from "@/components/ui";
 import { useUiStore } from "@/lib/stores/ui-store";
 import type { Task } from "@/lib/types";
 
@@ -17,10 +17,12 @@ type TaskCardViewProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 export function TaskCardView({ task, placeholder, overlay, className, ...props }: TaskCardViewProps) {
+  const accent = task.color ? colorStyles[task.color] : null;
   return (
     <div
       className={cx(
-        "flex w-full flex-col gap-2 rounded-xl border border-line bg-surface p-3 text-left shadow-card outline-none",
+        "relative flex w-full flex-col gap-2 overflow-hidden rounded-xl border border-line bg-surface p-3 text-left shadow-card outline-none",
+        accent && ["bg-linear-to-r to-transparent pl-4", accent.wash].join(" "),
         "touch-manipulation select-none [-webkit-touch-callout:none]",
         overlay
           ? "cursor-grabbing rotate-2 border-line-strong shadow-pop"
@@ -30,6 +32,7 @@ export function TaskCardView({ task, placeholder, overlay, className, ...props }
       )}
       {...props}
     >
+      {accent && <span aria-hidden className={cx("absolute inset-y-0 left-0 w-[3px]", accent.dot)} />}
       <span className="line-clamp-2 text-[13.5px] font-medium leading-snug">{task.title}</span>
       {task.description && (
         <span className="line-clamp-2 text-[12.5px] leading-relaxed text-muted">{task.description}</span>

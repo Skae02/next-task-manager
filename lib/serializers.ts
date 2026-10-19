@@ -5,7 +5,7 @@ import type {
   Task as DbTask,
   User as DbUser,
 } from "@/lib/generated/prisma/client";
-import type { PublicUser, Column, TagColor, Task, UserRef } from "@/lib/types";
+import type { PublicUser, Color, Column, Task, UserRef } from "@/lib/types";
 
 export function isProfileComplete(user: DbUser) {
   return Boolean(user.phone && user.fullName && user.alias && user.birthDate);
@@ -41,7 +41,8 @@ export function toTask(task: DbTaskWithUsers): Task {
     title: task.title,
     description: task.description,
     tagLabel: task.tagLabel,
-    tagColor: task.tagColor as TagColor | null,
+    tagColor: task.tagColor as Color | null,
+    color: task.color as Color | null,
     position: task.position,
     columnId: task.columnId,
     author: task.author,
@@ -56,6 +57,7 @@ export function toColumn(column: DbColumn & { tasks?: DbTaskWithUsers[] }): Colu
     id: column.id,
     title: column.title,
     description: column.description,
+    color: column.color as Color | null,
     position: column.position,
     tableId: column.tableId,
     tasks: (column.tasks ?? []).map(toTask),
@@ -67,6 +69,7 @@ export function toTableBase(table: DbTable) {
     id: table.id,
     title: table.title,
     description: table.description,
+    color: table.color as Color | null,
     createdAt: table.createdAt.toISOString(),
     updatedAt: table.updatedAt.toISOString(),
   };

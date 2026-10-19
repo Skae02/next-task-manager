@@ -2,10 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button, Field, FormError, Input, Modal, Textarea } from "@/components/ui";
+import { Button, ColorPicker, Field, FormError, Input, Modal, Textarea } from "@/components/ui";
 import { useBoardStore } from "@/lib/stores/board-store";
 import { useUiStore, type EntityDialog as EntityDialogState } from "@/lib/stores/ui-store";
 import { useForm } from "@/lib/use-form";
+import type { Color } from "@/lib/types";
 
 /** Mounted once in the app layout; renders whichever global dialog is open. */
 export function GlobalDialogs() {
@@ -32,16 +33,19 @@ function EntityDialog({ dialog }: { dialog: EntityDialogState | null }) {
         ? store.current?.columns.find((r) => r.id === dialog.id)
         : undefined;
 
-  const { bind, submit, submitting, fieldErrors, formError } = useForm({
+  const { values, setValues, bind, submit, submitting, fieldErrors, formError } = useForm({
     title: existing?.title ?? "",
     description: existing?.description ?? "",
+    // "" means no color: the form only holds strings.
+    color: (existing?.color ?? "") as string,
   });
 
   const isEdit = Boolean(dialog?.id);
   const noun = dialog?.kind === "column" ? "columna" : "tabla";
 
-  const onSubmit = submit(async (values) => {
+  const onSubmit = submit(async (v) => {
     if (!dialog) return;
+    const values = { title: v.title, description: v.description, color: (v.color || null) as Color | null };
     if (dialog.kind === "table") {
       if (dialog.id) await store.updateTable(dialog.id, values);
       else {
@@ -65,6 +69,16 @@ function EntityDialog({ dialog }: { dialog: EntityDialogState | null }) {
         </Field>
         <Field label="Descripción" error={fieldErrors.description}>
           {(id) => <Textarea id={id} placeholder="Opcional" {...bind("description")} />}
+        </Field>
+        <Field label="Color" error={fieldErrors.color} hint="Opcional, para distinguirla de un vistazo">
+          {() => (
+            <ColorPicker
+              label={`Color de la ${noun}`}
+              allowNone
+              value={(values.color || null) as Color | null}
+              onChange={(color) => setValues((current) => ({ ...current, color: color ?? "" }))}
+            />
+          )}
         </Field>
         <div className="flex justify-end gap-2 pt-1">
           <Button type="button" onClick={close}>

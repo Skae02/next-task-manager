@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { TAG_COLORS } from "@/lib/types";
+import { COLORS } from "@/lib/types";
 
 const title = z.string().trim().min(1, "El título es obligatorio").max(120);
 const description = z.string().trim().max(5000);
+const color = z.enum(COLORS, "Color inválido").nullable();
 
 export const credentialsSchema = z.object({
   email: z.email("Correo inválido").trim().toLowerCase(),
@@ -36,19 +37,20 @@ export const profileSchema = z.object({
 export const tableCreateSchema = z.object({
   title,
   description: description.optional().default(""),
+  color: color.optional().default(null),
 });
 export const tableUpdateSchema = z
-  .object({ title, description })
+  .object({ title, description, color })
   .partial();
 
 export const columnCreateSchema = tableCreateSchema;
 export const columnUpdateSchema = z
-  .object({ title, description, position: z.int().min(0) })
+  .object({ title, description, color, position: z.int().min(0) })
   .partial();
 
 const tag = {
   tagLabel: z.string().trim().max(30).nullable(),
-  tagColor: z.enum(TAG_COLORS, "Color inválido").nullable(),
+  tagColor: color,
 };
 
 export const taskCreateSchema = z.object({
@@ -56,6 +58,7 @@ export const taskCreateSchema = z.object({
   description: description.optional().default(""),
   tagLabel: tag.tagLabel.optional().default(null),
   tagColor: tag.tagColor.optional().default(null),
+  color: color.optional().default(null),
   assigneeId: z.string().nullable().optional().default(null),
 });
 export const taskUpdateSchema = z
@@ -63,6 +66,7 @@ export const taskUpdateSchema = z
     title,
     description,
     ...tag,
+    color,
     assigneeId: z.string().nullable(),
     columnId: z.string(),
   })
