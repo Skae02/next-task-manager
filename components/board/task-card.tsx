@@ -21,7 +21,7 @@ export function TaskCardView({ task, placeholder, overlay, className, ...props }
   return (
     <div
       className={cx(
-        "relative flex w-full flex-col gap-2 overflow-hidden rounded-xl border border-line bg-surface p-3 text-left shadow-card outline-none",
+        "relative flex w-full shrink-0 flex-col gap-2 overflow-hidden rounded-xl border border-line bg-surface p-3 text-left shadow-card outline-none",
         accent && ["bg-linear-to-r to-transparent pl-4", accent.wash].join(" "),
         "touch-manipulation select-none [-webkit-touch-callout:none]",
         overlay

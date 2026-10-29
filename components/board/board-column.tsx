@@ -31,7 +31,7 @@ export function BoardColumn({ column, tasks, isDropTarget }: Props) {
   return (
     <section
       className={cx(
-        "flex max-h-[calc(100dvh-14rem)] w-72 shrink-0 flex-col rounded-2xl border transition-colors",
+        "flex w-72 shrink-0 flex-col rounded-2xl border transition-colors",
         isDropTarget ? "border-accent/50 bg-accent-soft/40" : "border-line bg-surface-2/60",
         accent && ["border-t-[3px]", accent.border].join(" "),
       )}
@@ -86,7 +86,7 @@ export function BoardColumn({ column, tasks, isDropTarget }: Props) {
         />
       </header>
 
-      <div ref={setNodeRef} className="flex min-h-16 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2">
+      <div ref={setNodeRef} className="flex min-h-16 flex-col gap-2 px-2 pb-2">
         <SortableContext id={column.id} items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
             <SortableTaskCard key={task.id} task={task} />

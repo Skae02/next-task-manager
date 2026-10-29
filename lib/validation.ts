@@ -1,28 +1,28 @@
 import { z } from "zod";
 import { COLORS, MAX_TASK_TAGS } from "@/lib/types";
 
-const title = z.string().trim().min(1, "El tÃ­tulo es obligatorio").max(120);
+const title = z.string().trim().min(1, "El título es obligatorio").max(120);
 const description = z.string().trim().max(5000);
-const color = z.enum(COLORS, "Color invÃ¡lido").nullable();
+const color = z.enum(COLORS, "Color inválido").nullable();
 
 export const credentialsSchema = z.object({
-  email: z.email("Correo invÃ¡lido").trim().toLowerCase(),
+  email: z.email("Correo inválido").trim().toLowerCase(),
   password: z
     .string()
-    .min(8, "La contraseÃ±a debe tener al menos 8 caracteres")
-    .max(72, "La contraseÃ±a no puede superar 72 caracteres"),
+    .min(8, "La contraseña debe tener al menos 8 caracteres")
+    .max(72, "La contraseña no puede superar 72 caracteres"),
 });
 
 export const loginSchema = z.object({
-  email: z.email("Correo invÃ¡lido").trim().toLowerCase(),
-  password: z.string().min(1, "Ingresa tu contraseÃ±a"),
+  email: z.email("Correo inválido").trim().toLowerCase(),
+  password: z.string().min(1, "Ingresa tu contraseña"),
 });
 
 export const profileSchema = z.object({
   phone: z
     .string()
     .trim()
-    .regex(/^\+?[0-9\s-]{7,20}$/, "NÃºmero de celular invÃ¡lido"),
+    .regex(/^\+?[0-9\s-]{7,20}$/, "Número de celular inválido"),
   fullName: z.string().trim().min(2, "Ingresa tu nombre completo").max(120),
   alias: z
     .string()
@@ -30,7 +30,7 @@ export const profileSchema = z.object({
     .min(2, "El alias debe tener al menos 2 caracteres")
     .max(30),
   birthDate: z.iso
-    .date("Fecha invÃ¡lida")
+    .date("Fecha inválida")
     .refine((value) => new Date(value) < new Date(), "La fecha debe ser pasada"),
 });
 

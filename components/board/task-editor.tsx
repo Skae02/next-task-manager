@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { TagNameInput } from "@/components/board/tag-name-input";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronLeftIcon } from "@/components/icons";
@@ -190,9 +191,9 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
           {draft && (
             <div className="space-y-3 rounded-lg border border-line p-3">
               <Field label="Nombre de la etiqueta" error={tagError}>
-                {(id) => <Input id={id} autoFocus value={draft.label} maxLength={30} placeholder="p. ej. Bug"
-                  onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); confirmTag(); } }}
-                  onChange={(event) => { setDraft({ ...draft, label: event.target.value }); setTagError(undefined); }} />}
+                {(id) => <TagNameInput id={id} value={draft}
+                  excluded={tags.filter((_, index) => index !== editing).map((tag) => tag.label.toLocaleLowerCase("es"))}
+                  onChange={(tag) => { setDraft(tag); setTagError(undefined); }} onConfirm={confirmTag} />}
               </Field>
               <ColorPicker label="Color de la etiqueta" value={draft.color} allowNone onChange={(color) => setDraft({ ...draft, color })} />
               <div className="flex flex-wrap items-center justify-between gap-2">
