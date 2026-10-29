@@ -29,7 +29,7 @@ La interfaz busca ser minimalista, en la línea de las apps de tareas de macOS o
 **Tableros**
 
 - Crear, ver, editar y eliminar tablas, columnas y tareas. Al eliminar una tabla o una columna, también se elimina su contenido.
-- Cada tarea tiene título, descripción, una etiqueta con color (8 colores), autor y asignado. Por ahora una tarea solo se puede asignar a uno mismo.
+- Cada tarea tiene título, descripción, hasta 20 etiquetas con color (8 colores), autor y asignado. Por ahora una tarea solo se puede asignar a uno mismo.
 - Vista de tablero kanban con scroll horizontal, un modal con el detalle de cada tarea y una página propia para crear o editar tareas.
 - Modo claro y oscuro según el sistema.
 

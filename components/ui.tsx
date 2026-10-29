@@ -153,8 +153,8 @@ export function TagPill({ label, color }: { label: string | null; color: Color |
   if (!label) return null;
   const style = colorStyles[color ?? "gray"];
   return (
-    <span className={cx("inline-flex h-5 items-center gap-1.5 rounded-full px-2 text-[11.5px] font-medium", style.pill)}>
-      <span className={cx("size-1.5 rounded-full", style.dot)} />
+    <span className={cx("inline-flex min-h-5 max-w-full break-all items-center gap-1.5 rounded-full px-2 text-[11.5px] font-medium", style.pill)}>
+      <span className={cx("size-1.5 shrink-0 rounded-full", style.dot)} />
       {label}
     </span>
   );

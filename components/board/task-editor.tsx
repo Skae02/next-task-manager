@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeftIcon } from "@/components/icons";
 import { Avatar, Button, ColorPicker, Field, FormError, Input, Spinner, TagPill, Textarea, cx } from "@/components/ui";
 import { findTask, useBoardStore } from "@/lib/stores/board-store";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useForm } from "@/lib/use-form";
-import type { Color, TableDetail } from "@/lib/types";
+import { MAX_TASK_TAGS, type TaskTagInput, type Color, type TableDetail } from "@/lib/types";
 
 type Props = { tableId: string } & ({ mode: "create"; columnId: string } | { mode: "edit"; taskId: string });
 
@@ -68,11 +68,27 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
   const user = useAuthStore((s) => s.user);
   const backHref = `/tables/${table.id}`;
 
+  const [tags, setTags] = useState<TaskTagInput[]>(task?.tags.map(({ label, color }) => ({ label, color })) ?? []);
+  const [draft, setDraft] = useState<TaskTagInput | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [tagError, setTagError] = useState<string>();
+  const closeDraft = () => { setDraft(null); setEditing(null); setTagError(undefined); };
+  const confirmTag = () => {
+    if (!draft) return;
+    const label = draft.label.trim();
+    if (!label || label.length > 30) { setTagError("Ingresa un nombre de entre 1 y 30 caracteres"); return; }
+    if (tags.some((tag, index) => index !== editing && tag.label.toLocaleLowerCase("es") === label.toLocaleLowerCase("es"))) {
+      setTagError("Esta etiqueta ya existe"); return;
+    }
+    if (editing === null && tags.length >= MAX_TASK_TAGS) return;
+    const tag = { ...draft, label };
+    setTags((current) => editing === null ? [...current, tag] : current.map((item, index) => index === editing ? tag : item));
+    closeDraft();
+  };
   const { values, setValues, bind, submit, submitting, fieldErrors, formError } = useForm({
     title: task?.title ?? "",
     description: task?.description ?? "",
-    tagLabel: task?.tagLabel ?? "",
-    tagColor: (task?.tagColor ?? "blue") as string,
+
     // "" means no color: the form only holds strings.
     color: (task?.color ?? "") as string,
     columnId,
@@ -81,12 +97,11 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
   const set = (patch: Partial<typeof values>) => setValues((v) => ({ ...v, ...patch }));
 
   const onSubmit = submit(async (v) => {
-    const hasTag = v.tagLabel.trim() !== "";
+    if (draft) { setTagError("Confirma la etiqueta antes de guardar la tarea"); return; }
     const input = {
       title: v.title,
       description: v.description,
-      tagLabel: hasTag ? v.tagLabel : null,
-      tagColor: hasTag ? (v.tagColor as Color) : null,
+      tags,
       color: (v.color || null) as Color | null,
       assigneeId: v.assigneeId || null,
     };
@@ -159,23 +174,45 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
           </Field>
         </div>
 
-        <Field label="Etiqueta" error={fieldErrors.tagLabel ?? fieldErrors.tagColor} hint="Déjala vacía si no la necesitas">
-          {(id) => (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <Input id={id} placeholder="p. ej. Diseño, Bug, Urgente" maxLength={30} {...bind("tagLabel")} />
-                <span className="shrink-0">
-                  <TagPill label={values.tagLabel.trim() || null} color={values.tagColor as Color} />
-                </span>
+        <fieldset className="min-w-0 space-y-3" disabled={submitting}>
+          <legend className="text-[13px] font-medium">Etiquetas ({tags.length}/{MAX_TASK_TAGS})</legend>
+          {fieldErrors.tags && <p role="alert" className="text-danger">{fieldErrors.tags}</p>}
+          <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-lg border border-line bg-surface-2 p-3">
+            {tags.length === 0 && <span className="text-[12px] text-muted">Sin etiquetas agregadas</span>}
+            {tags.map((tag, index) => (
+              <button key={index} type="button" disabled={draft !== null} aria-label={`Editar etiqueta ${tag.label}`}
+                className="max-w-full rounded-full outline-none focus-visible:ring-4 focus-visible:ring-ring cursor-pointer"
+                onClick={() => { setEditing(index); setDraft({ ...tag }); setTagError(undefined); }}>
+                <TagPill label={tag.label} color={tag.color} />
+              </button>
+            ))}
+          </div>
+          {draft && (
+            <div className="space-y-3 rounded-lg border border-line p-3">
+              <Field label="Nombre de la etiqueta" error={tagError}>
+                {(id) => <Input id={id} autoFocus value={draft.label} maxLength={30} placeholder="p. ej. Bug"
+                  onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); confirmTag(); } }}
+                  onChange={(event) => { setDraft({ ...draft, label: event.target.value }); setTagError(undefined); }} />}
+              </Field>
+              <ColorPicker label="Color de la etiqueta" value={draft.color} allowNone onChange={(color) => setDraft({ ...draft, color })} />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <TagPill label={draft.label} color={draft.color} />
+                <div className="flex gap-2">
+                  <Button type="button" variant="ghost" onClick={() => {
+                    if (editing !== null) setTags((current) => current.filter((_, index) => index !== editing));
+                    closeDraft();
+                  }}>Quitar</Button>
+                  <Button type="button" variant="primary" onClick={confirmTag}>{editing === null ? "Agregar" : "Guardar"}</Button>
+                </div>
               </div>
-              <ColorPicker
-                label="Color de la etiqueta"
-                value={values.tagColor as Color}
-                onChange={(color) => color && set({ tagColor: color })}
-              />
             </div>
           )}
-        </Field>
+          <Button type="button" disabled={tags.length >= MAX_TASK_TAGS || draft !== null}
+            onClick={() => { setEditing(null); setDraft({ label: "", color: "blue" }); setTagError(undefined); }}>
+            Agregar etiqueta
+          </Button>
+          <p className="text-[12px] text-muted">{tags.length >= MAX_TASK_TAGS ? "Máximo de 20 etiquetas por tarea" : "Hasta 20 etiquetas, con nombres únicos de hasta 30 caracteres."}</p>
+        </fieldset>
 
         <Field label="Color de la tarea" error={fieldErrors.color} hint="Opcional, resalta la tarjeta en el tablero">
           {() => (

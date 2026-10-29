@@ -46,12 +46,13 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
     position = (last?.position ?? -1) + 1;
   }
 
+  const { tags, ...fields } = data;
   const task = await db.task.update({
     where: { id: taskId },
     data: {
-      ...data,
+      ...fields,
       position,
-      ...(data.tagLabel !== undefined && { tagLabel: data.tagLabel || null }),
+      ...(tags !== undefined && { tags: { deleteMany: {}, create: tags.map((tag, position) => ({ ...tag, position })) } }),
     },
     include: taskInclude,
   });

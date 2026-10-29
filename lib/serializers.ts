@@ -3,6 +3,7 @@ import type {
   Column as DbColumn,
   Table as DbTable,
   Task as DbTask,
+  TaskTag as DbTaskTag,
   User as DbUser,
 } from "@/lib/generated/prisma/client";
 import type { PublicUser, Color, Column, Task, UserRef } from "@/lib/types";
@@ -29,19 +30,19 @@ export const userRefSelect = { id: true, alias: true, fullName: true } as const;
 export const taskOrder: Prisma.TaskOrderByWithRelationInput[] = [{ position: "asc" }, { createdAt: "asc" }];
 
 export const taskInclude = {
+  tags: { orderBy: { position: "asc" } },
   author: { select: userRefSelect },
   assignee: { select: userRefSelect },
 } as const;
 
-type DbTaskWithUsers = DbTask & { author: UserRef; assignee: UserRef | null };
+type DbTaskWithUsers = DbTask & { tags: DbTaskTag[]; author: UserRef; assignee: UserRef | null };
 
 export function toTask(task: DbTaskWithUsers): Task {
   return {
     id: task.id,
     title: task.title,
     description: task.description,
-    tagLabel: task.tagLabel,
-    tagColor: task.tagColor as Color | null,
+    tags: task.tags.map((tag) => ({ id: tag.id, label: tag.label, color: tag.color as Color | null })),
     color: task.color as Color | null,
     position: task.position,
     columnId: task.columnId,

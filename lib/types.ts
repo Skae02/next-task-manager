@@ -38,12 +38,15 @@ export type TableSummary = {
   taskCount: number;
 };
 
+export const MAX_TASK_TAGS = 20;
+export type TaskTagInput = { label: string; color: Color | null };
+export type TaskTag = TaskTagInput & { id: string };
+
 export type Task = {
   id: string;
   title: string;
   description: string;
-  tagLabel: string | null;
-  tagColor: Color | null;
+  tags: TaskTag[];
   color: Color | null;
   position: number;
   columnId: string;

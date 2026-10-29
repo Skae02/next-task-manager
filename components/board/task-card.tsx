@@ -37,9 +37,12 @@ export function TaskCardView({ task, placeholder, overlay, className, ...props }
       {task.description && (
         <span className="line-clamp-2 text-[12.5px] leading-relaxed text-muted">{task.description}</span>
       )}
-      {(task.tagLabel || task.assignee) && (
+      {(task.tags.length > 0 || task.assignee) && (
         <span className="mt-0.5 flex items-center justify-between gap-2">
-          <TagPill label={task.tagLabel} color={task.tagColor} />
+          <span className="flex min-w-0 flex-wrap gap-1">
+            {task.tags.slice(0, 3).map((tag) => <TagPill key={tag.id} label={tag.label} color={tag.color} />)}
+            {task.tags.length > 3 && <span className="text-[11.5px] text-muted" aria-label={`${task.tags.length - 3} etiquetas más`}>+{task.tags.length - 3}</span>}
+          </span>
           {task.assignee && <Avatar name={task.assignee.fullName ?? task.assignee.alias} size={20} />}
         </span>
       )}

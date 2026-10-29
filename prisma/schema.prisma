@@ -62,8 +62,6 @@ model Task {
   id          String   @id @default(cuid())
   title       String
   description String   @default("")
-  tagLabel    String?
-  tagColor    String?
   color       String?
   position    Int      @default(0)
   columnId    String
@@ -72,10 +70,23 @@ model Task {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  tags     TaskTag[]
   column   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
   author   User   @relation("TaskAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   assignee User?  @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
 
   @@index([columnId])
   @@map("tasks")
+}
+
+model TaskTag {
+  id       String @id @default(cuid())
+  taskId   String
+  label    String @db.VarChar(30)
+  color    String?
+  position Int
+  task     Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, position])
+  @@map("task_tags")
 }

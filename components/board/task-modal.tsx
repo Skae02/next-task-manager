@@ -53,8 +53,8 @@ export function TaskModal() {
             </div>
 
             <dl className="flex flex-col gap-3.5 rounded-xl bg-surface-2 p-3.5 text-[13px] sm:border sm:border-line">
-              <Detail icon={<TagIcon size={13} />} label="Etiqueta">
-                {found.task.tagLabel ? <TagPill label={found.task.tagLabel} color={found.task.tagColor} /> : <Empty />}
+              <Detail icon={<TagIcon size={13} />} label="Etiquetas">
+                {found.task.tags.length ? <div className="flex flex-wrap gap-1">{found.task.tags.map((tag) => <TagPill key={tag.id} label={tag.label} color={tag.color} />)}</div> : <span className="text-subtle">Sin etiquetas</span>}
               </Detail>
               <Detail icon={<PaletteIcon size={13} />} label="Color">
                 {found.task.color ? (

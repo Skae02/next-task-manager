@@ -13,6 +13,7 @@ export const POST = handler(async (request, { params }: Ctx) => {
   const data = await parseBody(request, taskCreateSchema);
   assertAssignable(userId, data.assigneeId);
 
+  const { tags, ...fields } = data;
   const last = await db.task.findFirst({
     where: { columnId },
     orderBy: { position: "desc" },
@@ -20,8 +21,8 @@ export const POST = handler(async (request, { params }: Ctx) => {
   });
   const task = await db.task.create({
     data: {
-      ...data,
-      tagLabel: data.tagLabel || null,
+      ...fields,
+      tags: { create: tags.map((tag, position) => ({ ...tag, position })) },
       columnId,
       authorId: userId,
       position: (last?.position ?? -1) + 1,
