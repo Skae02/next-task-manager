@@ -58,7 +58,7 @@ const collisionDetection: CollisionDetection = (args) => {
   });
 };
 
-export function KanbanBoard({ table, after }: { table: TableDetail; after?: ReactNode }) {
+export function KanbanBoard({ table, after, matchesTask }: { table: TableDetail; after?: ReactNode; matchesTask?: (task: Task) => boolean }) {
   const moveTask = useBoardStore((s) => s.moveTask);
   const dndId = useId();
 
@@ -211,7 +211,7 @@ export function KanbanBoard({ table, after }: { table: TableDetail; after?: Reac
             <BoardColumn
               key={column.id}
               column={column}
-              tasks={(layout[column.id] ?? []).map((id) => tasksById.get(id)).filter((t): t is Task => Boolean(t))}
+              tasks={(layout[column.id] ?? []).map((id) => tasksById.get(id)).filter((t): t is Task => Boolean(t)).filter((task) => !matchesTask || matchesTask(task))}
               isDropTarget={targetColumnId === column.id && origin?.columnId !== column.id}
             />
           ))}

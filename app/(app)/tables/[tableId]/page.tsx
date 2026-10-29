@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { ActionMenu } from "@/components/app/menu";
-import { KanbanBoard } from "@/components/board/kanban-board";
+import { FilteredBoard } from "@/components/board/filtered-board";
 import { TaskModal } from "@/components/board/task-modal";
 import { ChevronLeftIcon, ColumnsIcon, PencilIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import { Button, Spinner, colorLabels, colorStyles, cx } from "@/components/ui";
@@ -106,7 +106,8 @@ export default function TablePage() {
               </Button>
             </div>
           ) : (
-            <KanbanBoard
+            <FilteredBoard
+              key={table.id}
               table={table}
               after={
                 <button

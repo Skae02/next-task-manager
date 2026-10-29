@@ -4,7 +4,8 @@ import { connection } from "next/server";
 
 /** Suggestions come only from tags on the current user's tasks. */
 const suggestions = handler(async (request) => {
-  const query = (new URL(request.url).searchParams.get("q") ?? "").trim().slice(0, 30);
+  const params = new URL(request.url).searchParams;
+  const query = (params.get("q") ?? "").trim().slice(0, 30);
   const userId = await requireUserId();
   const tags = await db.taskTag.groupBy({
     by: ["label", "color"],
@@ -13,7 +14,7 @@ const suggestions = handler(async (request) => {
       label: { contains: query, mode: "insensitive" },
     },
     orderBy: [{ label: "asc" }, { color: "asc" }],
-    take: 20,
+    ...(params.get("all") === "1" ? {} : { take: 20 }),
   });
   return Response.json({ tags }, { headers: { "Cache-Control": "private, no-store" } });
 });
