@@ -152,3 +152,7 @@ lib/
 prisma/              esquema y migraciones
 proxy.ts             redirecciones de páginas según la sesión
 ```
+
+### Prioridades de tareas
+
+Cada tarea tiene una prioridad obligatoria: No prioritario (por defecto), Bajo, Medio o Alto. Se selecciona al crear o editar la tarea y se muestra en el tablero y el detalle. El filtro por prioridad se combina con la búsqueda por título y el filtro por etiqueta.

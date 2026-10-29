@@ -70,11 +70,14 @@ model Task {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  priorityId String @default("none")
+  priority Priority @relation(fields: [priorityId], references: [id], onDelete: Restrict)
   tags     TaskTag[]
   column   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
   author   User   @relation("TaskAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   assignee User?  @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
 
+  @@index([priorityId])
   @@index([columnId])
   @@map("tasks")
 }
@@ -89,4 +92,13 @@ model TaskTag {
 
   @@unique([taskId, position])
   @@map("task_tags")
+}
+
+model Priority {
+  id String @id
+  name String
+  position Int @unique
+  tasks Task[]
+
+  @@map("priorities")
 }

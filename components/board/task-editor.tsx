@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PrioritySelect } from "@/components/board/priority";
 import { TagNameInput } from "@/components/board/tag-name-input";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -10,7 +11,7 @@ import { findTask, useBoardStore } from "@/lib/stores/board-store";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useForm } from "@/lib/use-form";
-import { MAX_TASK_TAGS, type TaskTagInput, type Color, type TableDetail } from "@/lib/types";
+import { MAX_TASK_TAGS, type PriorityId, type TaskTagInput, type Color, type TableDetail } from "@/lib/types";
 
 type Props = { tableId: string } & ({ mode: "create"; columnId: string } | { mode: "edit"; taskId: string });
 
@@ -88,6 +89,7 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
   };
   const { values, setValues, bind, submit, submitting, fieldErrors, formError } = useForm({
     title: task?.title ?? "",
+    priorityId: task?.priorityId ?? "none",
     description: task?.description ?? "",
 
     // "" means no color: the form only holds strings.
@@ -103,6 +105,7 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
       title: v.title,
       description: v.description,
       tags,
+      priorityId: v.priorityId as PriorityId,
       color: (v.color || null) as Color | null,
       assigneeId: v.assigneeId || null,
     };
@@ -174,6 +177,10 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
             )}
           </Field>
         </div>
+
+        <Field label="Prioridad" error={fieldErrors.priorityId}>
+          {(id) => <PrioritySelect id={id} value={values.priorityId} onChange={(priorityId) => set({ priorityId: priorityId as PriorityId })} />}
+        </Field>
 
         <fieldset className="min-w-0 space-y-3" disabled={submitting}>
           <legend className="text-[13px] font-medium">Etiquetas ({tags.length}/{MAX_TASK_TAGS})</legend>

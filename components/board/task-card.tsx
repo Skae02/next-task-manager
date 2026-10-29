@@ -1,5 +1,7 @@
 "use client";
 
+import { PriorityBadge } from "@/components/board/priority";
+
 import type { HTMLAttributes, KeyboardEvent, Ref } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -34,6 +36,7 @@ export function TaskCardView({ task, placeholder, overlay, className, ...props }
     >
       {accent && <span aria-hidden className={cx("absolute inset-y-0 left-0 w-[3px]", accent.dot)} />}
       <span className="line-clamp-2 text-[13.5px] font-medium leading-snug">{task.title}</span>
+      <PriorityBadge priority={task.priority} />
       {task.description && (
         <span className="line-clamp-2 text-[12.5px] leading-relaxed text-muted">{task.description}</span>
       )}

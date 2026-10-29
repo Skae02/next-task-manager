@@ -4,9 +4,10 @@ import type {
   Table as DbTable,
   Task as DbTask,
   TaskTag as DbTaskTag,
+  Priority as DbPriority,
   User as DbUser,
 } from "@/lib/generated/prisma/client";
-import type { PublicUser, Color, Column, Task, UserRef } from "@/lib/types";
+import type { PublicUser, Color, Column, Task, UserRef, PriorityId } from "@/lib/types";
 
 export function isProfileComplete(user: DbUser) {
   return Boolean(user.phone && user.fullName && user.alias && user.birthDate);
@@ -30,17 +31,20 @@ export const userRefSelect = { id: true, alias: true, fullName: true } as const;
 export const taskOrder: Prisma.TaskOrderByWithRelationInput[] = [{ position: "asc" }, { createdAt: "asc" }];
 
 export const taskInclude = {
+  priority: true,
   tags: { orderBy: { position: "asc" } },
   author: { select: userRefSelect },
   assignee: { select: userRefSelect },
 } as const;
 
-type DbTaskWithUsers = DbTask & { tags: DbTaskTag[]; author: UserRef; assignee: UserRef | null };
+type DbTaskWithUsers = DbTask & { priority: DbPriority; tags: DbTaskTag[]; author: UserRef; assignee: UserRef | null };
 
 export function toTask(task: DbTaskWithUsers): Task {
   return {
     id: task.id,
     title: task.title,
+    priorityId: task.priorityId as PriorityId,
+    priority: task.priority,
     description: task.description,
     tags: task.tags.map((tag) => ({ id: tag.id, label: tag.label, color: tag.color as Color | null })),
     color: task.color as Color | null,

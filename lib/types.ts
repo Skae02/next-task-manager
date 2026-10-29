@@ -38,6 +38,10 @@ export type TableSummary = {
   taskCount: number;
 };
 
+export const PRIORITY_IDS = ["none", "low", "medium", "high"] as const;
+export type PriorityId = (typeof PRIORITY_IDS)[number];
+export type Priority = { id: string; name: string; position: number };
+
 export const MAX_TASK_TAGS = 20;
 export type TaskTagInput = { label: string; color: Color | null };
 export type TaskTag = TaskTagInput & { id: string };
@@ -47,6 +51,8 @@ export type Task = {
   title: string;
   description: string;
   tags: TaskTag[];
+  priorityId: PriorityId;
+  priority: Priority;
   color: Color | null;
   position: number;
   columnId: string;

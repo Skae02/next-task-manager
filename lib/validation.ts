@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { COLORS, MAX_TASK_TAGS } from "@/lib/types";
+import { COLORS, MAX_TASK_TAGS, PRIORITY_IDS } from "@/lib/types";
 
 const title = z.string().trim().min(1, "El título es obligatorio").max(120);
 const description = z.string().trim().max(5000);
@@ -60,10 +60,13 @@ export const taskTagsSchema = z.array(z.object({
   });
 });
 
+const priorityId = z.enum(PRIORITY_IDS, "Prioridad inv\u00e1lida");
+
 export const taskCreateSchema = z.object({
   title,
   description: description.optional().default(""),
   tags: taskTagsSchema.optional().default([]),
+  priorityId: priorityId.optional().default("none"),
   color: color.optional().default(null),
   assigneeId: z.string().nullable().optional().default(null),
 });
@@ -72,6 +75,7 @@ export const taskUpdateSchema = z
     title,
     description,
     tags: taskTagsSchema,
+    priorityId,
     color,
     assigneeId: z.string().nullable(),
     columnId: z.string(),

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { PrioritySelect } from "@/components/board/priority";
 import { KanbanBoard } from "@/components/board/kanban-board";
 import { Button, Input } from "@/components/ui";
 import { api } from "@/lib/http";
@@ -9,6 +10,7 @@ import type { TableDetail, Task, TaskTagInput } from "@/lib/types";
 const normalize = (text: string) => text.trim().toLocaleLowerCase("es");
 
 export function FilteredBoard({ table, after }: { table: TableDetail; after?: ReactNode }) {
+  const [priorityId, setPriorityId] = useState("");
   const [search, setSearch] = useState("");
   const [label, setLabel] = useState("");
   const [labels, setLabels] = useState<string[]>([]);
@@ -28,15 +30,16 @@ export function FilteredBoard({ table, after }: { table: TableDetail; after?: Re
 
   const words = normalize(search).split(/\s+/).filter(Boolean);
   const matchesTask = (task: Task) => words.every((word) => normalize(task.title).includes(word))
-    && (!label || task.tags.some((tag) => normalize(tag.label) === label));
+    && (!label || task.tags.some((tag) => normalize(tag.label) === label))
+    && (!priorityId || task.priorityId === priorityId);
   const tasks = table.columns.flatMap((column) => column.tasks);
   const count = tasks.filter(matchesTask).length;
-  const filtering = words.length > 0 || label !== "";
+  const filtering = words.length > 0 || label !== "" || priorityId !== "";
 
   return (
     <>
       <section aria-label="Filtros de tareas" className="mb-5 space-y-3 rounded-xl border border-line bg-surface p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
           <div className="min-w-0 flex-1">
             <label htmlFor="task-search" className="mb-1 block text-[12px] font-medium">Buscar por título</label>
             <Input id="task-search" type="search" value={search} placeholder="Escribe palabras del título…" onChange={(event) => setSearch(event.target.value)} />
@@ -49,7 +52,11 @@ export function FilteredBoard({ table, after }: { table: TableDetail; after?: Re
               {labels.map((name) => <option key={normalize(name)} value={normalize(name)}>{name}</option>)}
             </select>
           </div>
-          <Button type="button" disabled={!filtering && !search} onClick={() => { setSearch(""); setLabel(""); }} className="cursor-pointer">Limpiar filtros</Button>
+          <div className="min-w-0 sm:w-48">
+            <label htmlFor="task-priority-filter" className="mb-1 block text-[12px] font-medium">Prioridad</label>
+            <PrioritySelect id="task-priority-filter" filter value={priorityId} onChange={setPriorityId} />
+          </div>
+          <Button type="button" disabled={!filtering && !search} onClick={() => { setSearch(""); setLabel(""); setPriorityId(""); }} className="cursor-pointer">Limpiar filtros</Button>
         </div>
         {status === "loading" && <p className="text-[12px] text-muted">Cargando tus etiquetas…</p>}
         {status === "error" && <div className="flex items-center gap-2 text-[12px] text-danger">

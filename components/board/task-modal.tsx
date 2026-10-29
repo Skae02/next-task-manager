@@ -1,5 +1,7 @@
 "use client";
 
+import { PriorityBadge } from "@/components/board/priority";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { PencilIcon, ColumnsIcon, PaletteIcon, TagIcon, TrashIcon, UserIcon } from "@/components/icons";
@@ -53,6 +55,9 @@ export function TaskModal() {
             </div>
 
             <dl className="flex flex-col gap-3.5 rounded-xl bg-surface-2 p-3.5 text-[13px] sm:border sm:border-line">
+              <Detail icon={<PaletteIcon size={13} />} label="Prioridad">
+                <PriorityBadge priority={found.task.priority} />
+              </Detail>
               <Detail icon={<TagIcon size={13} />} label="Etiquetas">
                 {found.task.tags.length ? <div className="flex flex-wrap gap-1">{found.task.tags.map((tag) => <TagPill key={tag.id} label={tag.label} color={tag.color} />)}</div> : <span className="text-subtle">Sin etiquetas</span>}
               </Detail>

@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { api, ApiRequestError } from "@/lib/http";
 import { useUiStore } from "@/lib/stores/ui-store";
-import type { Color, TaskTagInput, Column, TableDetail, TableSummary, Task } from "@/lib/types";
+import type { Color, PriorityId, TaskTagInput, Column, TableDetail, TableSummary, Task } from "@/lib/types";
 
 type Status = "idle" | "loading" | "ready" | "error";
 
@@ -13,6 +13,7 @@ export type TaskInput = {
   title: string;
   description: string;
   tags: TaskTagInput[];
+  priorityId: PriorityId;
   color: Color | null;
   assigneeId: string | null;
   columnId?: string;
