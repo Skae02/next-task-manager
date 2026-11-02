@@ -60,6 +60,10 @@ export type Task = {
   assignee: UserRef | null;
   createdAt: string;
   updatedAt: string;
+  createdOn: string;
+  lastUpdateOn: string;
+  /** Calendar date (YYYY-MM-DD), without a time. */
+  endDate: string | null;
 };
 
 export type Column = {

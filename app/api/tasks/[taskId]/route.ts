@@ -3,6 +3,7 @@ import { HttpError, handler, parseBody, requireUserId } from "@/lib/api";
 import { assertAssignable, findOwnedColumn, findOwnedTask } from "@/lib/ownership";
 import { taskUpdateSchema } from "@/lib/validation";
 import { taskInclude, toTask } from "@/lib/serializers";
+import { isValidTaskEndDate, TASK_END_DATE_ERROR } from "@/lib/task-dates";
 
 type Ctx = RouteContext<"/api/tasks/[taskId]">;
 
@@ -23,6 +24,9 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
   const current = await findOwnedTask(userId, taskId);
   const data = await parseBody(request, taskUpdateSchema);
   assertAssignable(userId, data.assigneeId);
+  if (!isValidTaskEndDate(data.endDate, current.createdAt)) {
+    throw new HttpError(422, "Datos inválidos", { endDate: TASK_END_DATE_ERROR });
+  }
 
   // Moving a task: the target column must be ours and in the same table.
   if (data.columnId && data.columnId !== current.columnId) {
@@ -51,6 +55,8 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
     where: { id: taskId },
     data: {
       ...fields,
+      endDate: fields.endDate === undefined ? undefined : fields.endDate ? new Date(fields.endDate) : null,
+      updatedAt: new Date(),
       position,
       ...(tags !== undefined && { tags: { deleteMany: {}, create: tags.map((tag, position) => ({ ...tag, position })) } }),
     },

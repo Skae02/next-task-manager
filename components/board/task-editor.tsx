@@ -11,6 +11,8 @@ import { findTask, useBoardStore } from "@/lib/stores/board-store";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useForm } from "@/lib/use-form";
+import { ApiRequestError } from "@/lib/http";
+import { isValidTaskEndDate, taskCreationDate, TASK_END_DATE_ERROR } from "@/lib/task-dates";
 import { MAX_TASK_TAGS, type PriorityId, type TaskTagInput, type Color, type TableDetail } from "@/lib/types";
 
 type Props = { tableId: string } & ({ mode: "create"; columnId: string } | { mode: "edit"; taskId: string });
@@ -74,6 +76,7 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
   const [draft, setDraft] = useState<TaskTagInput | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
   const [tagError, setTagError] = useState<string>();
+  const [openedOn] = useState(() => new Date().toISOString());
   const closeDraft = () => { setDraft(null); setEditing(null); setTagError(undefined); };
   const confirmTag = () => {
     if (!draft) return;
@@ -89,6 +92,7 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
   };
   const { values, setValues, bind, submit, submitting, fieldErrors, formError } = useForm({
     title: task?.title ?? "",
+    endDate: task?.endDate ?? "",
     priorityId: task?.priorityId ?? "none",
     description: task?.description ?? "",
 
@@ -101,7 +105,11 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
 
   const onSubmit = submit(async (v) => {
     if (draft) { setTagError("Confirma la etiqueta antes de guardar la tarea"); return; }
+    if (!isValidTaskEndDate(v.endDate, task?.createdOn ?? new Date())) {
+      throw new ApiRequestError(422, "Datos inválidos", { endDate: TASK_END_DATE_ERROR });
+    }
     const input = {
+      endDate: v.endDate || null,
       title: v.title,
       description: v.description,
       tags,
@@ -135,13 +143,13 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
         </Field>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Columna" error={fieldErrors.columnId}>
+          <Field label="Columna" error={fieldErrors.columnId} >
             {(id) => (
               <select
                 id={id}
                 value={values.columnId}
                 onChange={(e) => set({ columnId: e.target.value })}
-                className="h-9 w-full rounded-lg border border-line bg-surface px-2.5 outline-none focus:border-accent focus:ring-4 focus:ring-ring"
+                className="h-9 w-full rounded-lg border border-line bg-surface px-2.5 outline-none focus:border-accent focus:ring-4 focus:ring-ring cursor-pointer"
               >
                 {table.columns.map((column) => (
                   <option key={column.id} value={column.id}>
@@ -181,6 +189,20 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
         <Field label="Prioridad" error={fieldErrors.priorityId}>
           {(id) => <PrioritySelect id={id} value={values.priorityId} onChange={(priorityId) => set({ priorityId: priorityId as PriorityId })} />}
         </Field>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Fecha de creación" hint={task ? "Se asigna automáticamente" : "Se asignará al crear la tarea"}>
+            {(id) => <Input id={id} type="date" value={taskCreationDate(task?.createdOn ?? openedOn)} readOnly className="text-muted" />}
+          </Field>
+          <Field label="Fecha de finalización" error={fieldErrors.endDate} hint="Opcional">
+            {(id) => <Input id={id} type="date" min={taskCreationDate(task?.createdOn ?? openedOn)} {...bind("endDate")} />}
+          </Field>
+        </div>
+        {task && (
+          <p className="text-[12px] text-muted">
+            Última actualización: <time dateTime={task.lastUpdateOn}>{new Intl.DateTimeFormat("es", { dateStyle: "medium", timeStyle: "short" }).format(new Date(task.lastUpdateOn))}</time>
+          </p>
+        )}
 
         <fieldset className="min-w-0 space-y-3" disabled={submitting}>
           <legend className="text-[13px] font-medium">Etiquetas ({tags.length}/{MAX_TASK_TAGS})</legend>
@@ -234,10 +256,10 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
         </Field>
 
         <div className="flex justify-end gap-2 border-t border-line pt-5">
-          <Button type="button" onClick={() => router.push(backHref)}>
+          <Button type="button" className="cursor-pointer" onClick={() => router.push(backHref)}>
             Cancelar
           </Button>
-          <Button type="submit" variant="primary" loading={submitting}>
+          <Button type="submit" variant="primary" loading={submitting} className="cursor-pointer">
             {task ? "Guardar cambios" : "Crear tarea"}
           </Button>
         </div>

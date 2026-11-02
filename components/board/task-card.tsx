@@ -8,6 +8,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Avatar, TagPill, colorStyles, cx } from "@/components/ui";
 import { useUiStore } from "@/lib/stores/ui-store";
 import type { Task } from "@/lib/types";
+import { formatTaskEndDate } from "@/lib/task-dates";
 
 type TaskCardViewProps = HTMLAttributes<HTMLDivElement> & {
   task: Task;
@@ -37,6 +38,7 @@ export function TaskCardView({ task, placeholder, overlay, className, ...props }
       {accent && <span aria-hidden className={cx("absolute inset-y-0 left-0 w-[3px]", accent.dot)} />}
       <span className="line-clamp-2 text-[13.5px] font-medium leading-snug">{task.title}</span>
       <PriorityBadge priority={task.priority} />
+      {task.endDate && <span className="text-[11.5px] text-muted">Finalización: <time dateTime={task.endDate}>{formatTaskEndDate(task.endDate)}</time></span>}
       {task.description && (
         <span className="line-clamp-2 text-[12.5px] leading-relaxed text-muted">{task.description}</span>
       )}

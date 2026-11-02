@@ -4,11 +4,12 @@ import { PriorityBadge } from "@/components/board/priority";
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { PencilIcon, ColumnsIcon, PaletteIcon, TagIcon, TrashIcon, UserIcon } from "@/components/icons";
+import { CalendarIcon, ClockIcon, PencilIcon, ColumnsIcon, PaletteIcon, TagIcon, TrashIcon, UserIcon } from "@/components/icons";
 import { Avatar, Button, Modal, TagPill, colorLabels, colorStyles, cx } from "@/components/ui";
 import { findTask, useBoardStore } from "@/lib/stores/board-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import type { UserRef } from "@/lib/types";
+import { formatTaskEndDate } from "@/lib/task-dates";
 
 const dateFormat = new Intl.DateTimeFormat("es", { dateStyle: "medium", timeStyle: "short" });
 
@@ -77,20 +78,24 @@ export function TaskModal() {
               <Detail icon={<UserIcon size={13} />} label="Asignado a">
                 {found.task.assignee ? <Person user={found.task.assignee} /> : <Empty />}
               </Detail>
-              <div className="border-t border-line pt-3 text-[11.5px] leading-relaxed text-muted">
-                Creada {dateFormat.format(new Date(found.task.createdAt))}
-                <br />
-                Editada {dateFormat.format(new Date(found.task.updatedAt))}
-              </div>
+              <Detail icon={<CalendarIcon size={13} />} label="Fecha de creación">
+                <time dateTime={found.task.createdOn}>{dateFormat.format(new Date(found.task.createdOn))}</time>
+              </Detail>
+              <Detail icon={<CalendarIcon size={13} />} label="Fecha de finalización">
+                {found.task.endDate ? <time dateTime={found.task.endDate}>{formatTaskEndDate(found.task.endDate)}</time> : <span className="text-subtle">Sin fecha</span>}
+              </Detail>
+              <Detail icon={<ClockIcon size={13} />} label="Última actualización">
+                <time dateTime={found.task.lastUpdateOn}>{dateFormat.format(new Date(found.task.lastUpdateOn))}</time>
+              </Detail>
             </dl>
           </div>
 
           <div className="mt-6 flex justify-between gap-2 border-t border-line pt-4">
-            <Button variant="ghost" className="text-danger hover:bg-danger-soft hover:text-danger" onClick={onDelete}>
+            <Button variant="ghost" className="text-danger hover:bg-danger-soft hover:text-danger cursor-pointer" onClick={onDelete}>
               <TrashIcon size={15} /> Eliminar
             </Button>
             <div className="flex gap-2">
-              <Button onClick={closeTask}>Cerrar</Button>
+              <Button className="cursor-pointer" onClick={closeTask}>Cerrar</Button>
               <Link
                 href={`/tables/${found.column.tableId}/tasks/${found.task.id}/edit`}
                 onClick={closeTask}

@@ -2,7 +2,10 @@ import "server-only";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/lib/generated/prisma/client";
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+  prismaConstructor?: typeof PrismaClient;
+};
 
 const LOCAL_HOSTS = ["localhost", "127.0.0.1", "::1"];
 
@@ -21,7 +24,16 @@ function createClient() {
   return new PrismaClient({ adapter });
 }
 
-// Reuse the client across hot reloads in development.
-export const db = globalForPrisma.prisma ?? createClient();
+// Reuse connections only while the generated client is unchanged. A schema
+// regeneration must not retain an instance that still knows the old fields.
+const cachedClient = globalForPrisma.prisma;
+const canReuseClient = globalForPrisma.prismaConstructor === PrismaClient;
+export const db = cachedClient && canReuseClient ? cachedClient : createClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = db;
+  globalForPrisma.prismaConstructor = PrismaClient;
+  if (cachedClient && cachedClient !== db) {
+    void cachedClient.$disconnect().catch(console.error);
+  }
+}

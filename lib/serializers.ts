@@ -52,6 +52,9 @@ export function toTask(task: DbTaskWithUsers): Task {
     columnId: task.columnId,
     author: task.author,
     assignee: task.assignee,
+    createdOn: task.createdAt.toISOString(),
+    lastUpdateOn: task.updatedAt.toISOString(),
+    endDate: task.endDate?.toISOString().slice(0, 10) ?? null,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
   };

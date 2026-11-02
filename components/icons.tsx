@@ -60,3 +60,9 @@ export const PaletteIcon = (p: IconProps) => (
 export const ColumnsIcon = (p: IconProps) => (
   <Icon {...p}><rect x="3" y="3" width="5" height="18" rx="1.5" /><rect x="10" y="3" width="5" height="12" rx="1.5" /><rect x="17" y="3" width="4" height="8" rx="1.5" /></Icon>
 );
+export const CalendarIcon = (p: IconProps) => (
+  <Icon {...p}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 11h18" /></Icon>
+);
+export const ClockIcon = (p: IconProps) => (
+  <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></Icon>
+);

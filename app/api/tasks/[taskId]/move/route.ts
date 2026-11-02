@@ -50,8 +50,8 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
     const result = new Map([[columnId, targetIds]]);
     if (sourceId !== columnId) {
       result.set(sourceId, idsIn(sourceId));
-      await tx.task.update({ where: { id: taskId }, data: { columnId } });
     }
+    await tx.task.update({ where: { id: taskId }, data: { columnId, updatedAt: new Date() } });
 
     for (const ids of result.values()) {
       await tx.$executeRaw`

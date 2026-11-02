@@ -63,6 +63,7 @@ export const taskTagsSchema = z.array(z.object({
 const priorityId = z.enum(PRIORITY_IDS, "Prioridad inv\u00e1lida");
 
 export const taskCreateSchema = z.object({
+  endDate: z.iso.date("Fecha inválida").nullable().optional().default(null),
   title,
   description: description.optional().default(""),
   tags: taskTagsSchema.optional().default([]),
@@ -72,6 +73,7 @@ export const taskCreateSchema = z.object({
 });
 export const taskUpdateSchema = z
   .object({
+    endDate: z.iso.date("Fecha inválida").nullable(),
     title,
     description,
     tags: taskTagsSchema,

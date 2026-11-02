@@ -10,6 +10,7 @@ type Status = "idle" | "loading" | "ready" | "error";
 export type TableInput = { title: string; description: string; color: Color | null };
 export type ColumnInput = TableInput;
 export type TaskInput = {
+  endDate: string | null;
   title: string;
   description: string;
   tags: TaskTagInput[];
