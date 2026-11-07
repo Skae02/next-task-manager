@@ -54,6 +54,7 @@ export function toTask(task: DbTaskWithUsers): Task {
     assignee: task.assignee,
     createdOn: task.createdAt.toISOString(),
     lastUpdateOn: task.updatedAt.toISOString(),
+    completedAt: task.completedAt?.toISOString() ?? null,
     endDate: task.endDate?.toISOString().slice(0, 10) ?? null,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
@@ -75,6 +76,7 @@ export function toColumn(column: DbColumn & { tasks?: DbTaskWithUsers[] }): Colu
 export function toTableBase(table: DbTable) {
   return {
     id: table.id,
+    completionColumnId: table.completionColumnId,
     title: table.title,
     description: table.description,
     color: table.color as Color | null,

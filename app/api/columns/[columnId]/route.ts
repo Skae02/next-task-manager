@@ -1,3 +1,4 @@
+import { setCompletionColumn } from "@/lib/task-completion";
 import { db } from "@/lib/db";
 import { handler, parseBody, requireUserId } from "@/lib/api";
 import { findOwnedColumn } from "@/lib/ownership";
@@ -24,13 +25,19 @@ export const GET = handler(async (_request, { params }: Ctx) => {
 export const PATCH = handler(async (request, { params }: Ctx) => {
   const userId = await requireUserId();
   const { columnId } = await params;
-  await findOwnedColumn(userId, columnId);
+  const owned = await findOwnedColumn(userId, columnId);
   const data = await parseBody(request, columnUpdateSchema);
 
-  const column = await db.column.update({
-    where: { id: columnId },
-    data,
-    include: withTasks,
+  const { isCompletion, ...fields } = data;
+  const tableId = owned.tableId;
+  const column = await db.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "tables" WHERE id = ${tableId} FOR NO KEY UPDATE`;
+    const table = await tx.table.findUniqueOrThrow({ where: { id: tableId } });
+    if (isCompletion === true) await setCompletionColumn(tx, tableId, columnId);
+    else if (isCompletion === false && table.completionColumnId === columnId) {
+      await setCompletionColumn(tx, tableId, null);
+    }
+    return tx.column.update({ where: { id: columnId }, data: fields, include: withTasks });
   });
   return Response.json({ column: toColumn(column) });
 });

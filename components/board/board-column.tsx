@@ -25,7 +25,10 @@ export function BoardColumn({ column, tasks, isDropTarget }: Props) {
   const deleteColumn = useBoardStore((s) => s.deleteColumn);
   const { openEntityDialog, askConfirm } = useUiStore();
   const newTaskHref = `/tables/${column.tableId}/columns/${column.id}/tasks/new`;
+  const completionColumnId = useBoardStore((s) => s.current?.completionColumnId);
+  const isCompletion = completionColumnId === column.id;
   const count = tasks.length;
+  const totalCount = column.tasks.length;
   const accent = column.color ? colorStyles[column.color] : null;
 
   return (
@@ -55,6 +58,7 @@ export function BoardColumn({ column, tasks, isDropTarget }: Props) {
               {count}
             </span>
           </div>
+          {isCompletion && <p className="mt-1 text-xs text-muted">Columna de finalización</p>}
           {column.description && (
             <p className="mt-0.5 line-clamp-2 text-[12px] text-muted">{column.description}</p>
           )}
@@ -75,10 +79,7 @@ export function BoardColumn({ column, tasks, isDropTarget }: Props) {
               onSelect: () =>
                 askConfirm({
                   title: "Eliminar columna",
-                  message:
-                    count === 0
-                      ? `Se eliminará “${column.title}”.`
-                      : `Se eliminará “${column.title}” junto con ${count === 1 ? "su tarea" : `sus ${count} tareas`}.`,
+                  message: `Se eliminará la columna ${column.title}${totalCount ? ` junto con sus ${totalCount} tareas` : ""}.${isCompletion ? " El tablero quedará sin columna de finalización." : ""}`,
                   onConfirm: () => deleteColumn(column.id),
                 }),
             },

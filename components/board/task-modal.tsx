@@ -9,7 +9,7 @@ import { Avatar, Button, Modal, TagPill, colorLabels, colorStyles, cx } from "@/
 import { findTask, useBoardStore } from "@/lib/stores/board-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import type { UserRef } from "@/lib/types";
-import { formatTaskEndDate } from "@/lib/task-dates";
+import { TaskEndDate } from "@/components/board/task-end-date";
 
 const dateFormat = new Intl.DateTimeFormat("es", { dateStyle: "medium", timeStyle: "short" });
 
@@ -56,6 +56,12 @@ export function TaskModal() {
             </div>
 
             <dl className="flex flex-col gap-3.5 rounded-xl bg-surface-2 p-3.5 text-[13px] sm:border sm:border-line">
+              <Detail icon={<ColumnsIcon size={13} />} label="Estado">
+                {found.column.id === current?.completionColumnId ? "Terminada" : "Pendiente"}
+              </Detail>
+              {found.task.completedAt && <Detail icon={<CalendarIcon size={13} />} label="Fecha de finalización">
+                <time dateTime={found.task.completedAt}>{dateFormat.format(new Date(found.task.completedAt))}</time>
+              </Detail>}
               <Detail icon={<PaletteIcon size={13} />} label="Prioridad">
                 <PriorityBadge priority={found.task.priority} />
               </Detail>
@@ -81,8 +87,8 @@ export function TaskModal() {
               <Detail icon={<CalendarIcon size={13} />} label="Fecha de creación">
                 <time dateTime={found.task.createdOn}>{dateFormat.format(new Date(found.task.createdOn))}</time>
               </Detail>
-              <Detail icon={<CalendarIcon size={13} />} label="Fecha de finalización">
-                {found.task.endDate ? <time dateTime={found.task.endDate}>{formatTaskEndDate(found.task.endDate)}</time> : <span className="text-subtle">Sin fecha</span>}
+              <Detail icon={<CalendarIcon size={13} />} label="Fecha de vencimiento">
+                <TaskEndDate endDate={found.task.endDate} completed={found.column.id === current?.completionColumnId} />
               </Detail>
               <Detail icon={<ClockIcon size={13} />} label="Última actualización">
                 <time dateTime={found.task.lastUpdateOn}>{dateFormat.format(new Date(found.task.lastUpdateOn))}</time>

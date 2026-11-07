@@ -194,7 +194,7 @@ function TaskForm({ table, columnId, task }: TaskFormProps) {
           <Field label="Fecha de creación" hint={task ? "Se asigna automáticamente" : "Se asignará al crear la tarea"}>
             {(id) => <Input id={id} type="date" value={taskCreationDate(task?.createdOn ?? openedOn)} readOnly className="text-muted" />}
           </Field>
-          <Field label="Fecha de finalización" error={fieldErrors.endDate} hint="Opcional">
+          <Field label="Fecha de vencimiento" error={fieldErrors.endDate} hint="Opcional">
             {(id) => <Input id={id} type="date" min={taskCreationDate(task?.createdOn ?? openedOn)} {...bind("endDate")} />}
           </Field>
         </div>

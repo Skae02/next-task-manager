@@ -19,10 +19,31 @@ model User {
   updatedAt    DateTime  @updatedAt
 
   tables        Table[]
+  sessions      Session[]
   authoredTasks Task[]  @relation("TaskAuthor")
   assignedTasks Task[]  @relation("TaskAssignee")
 
   @@map("users")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model AuthRateLimit {
+  key       String   @id
+  count     Int
+  expiresAt DateTime
+
+  @@index([expiresAt])
+  @@map("auth_rate_limits")
 }
 
 model Table {
@@ -35,6 +56,8 @@ model Table {
   updatedAt   DateTime @updatedAt
 
   owner   User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  completionColumnId String? @unique
+  completionColumn Column? @relation("CompletionColumn", fields: [completionColumnId], references: [id], onDelete: SetNull)
   columns Column[]
 
   @@index([ownerId])
@@ -52,6 +75,7 @@ model Column {
   updatedAt   DateTime @updatedAt
 
   table Table  @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  completionFor Table? @relation("CompletionColumn")
   tasks Task[]
 
   @@index([tableId])
@@ -70,6 +94,7 @@ model Task {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   endDate     DateTime? @db.Date
+  completedAt DateTime?
 
   priorityId String @default("none")
   priority Priority @relation(fields: [priorityId], references: [id], onDelete: Restrict)

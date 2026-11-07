@@ -24,7 +24,7 @@ La interfaz busca ser minimalista, en la línea de las apps de tareas de macOS o
 
   Hasta completar el segundo paso, la app solo deja entrar a `/onboarding`.
 - Contraseñas guardadas con hash bcrypt (12 rondas), nunca en texto plano.
-- Sesión con un JWT firmado (HS256) en una cookie `httpOnly`, `SameSite=Lax`, que dura 7 días.
+- Sesión con un JWT firmado (HS256) en una cookie `httpOnly`, `SameSite=Lax`, que dura 7 días. Cada sesión se registra en PostgreSQL y se revoca al cerrar sesión.
 
 **Tableros**
 
@@ -83,7 +83,9 @@ Para producción: `npm run build` y luego `npm start`.
 | `DATABASE_URL` | Conexión de la app. En Supabase, el pooler en modo transacción (puerto 6543). |
 | `DIRECT_URL` | Conexión de la CLI de Prisma para las migraciones. En Supabase, el modo sesión (puerto 5432). Si no se define, se usa `DATABASE_URL`. |
 | `JWT_SECRET` | Secreto para firmar la sesión, de al menos 32 caracteres. Se genera con `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`. |
-| `DATABASE_CA_CERT` | Opcional. Certificado CA de la base en formato PEM, para verificar el TLS. Sin él la conexión igual va cifrada, pero sin verificar el certificado. |
+| `DATABASE_CA_CERT` | Certificado CA de la base en formato PEM, si su certificado no pertenece a una CA del sistema. Las conexiones remotas siempre verifican el certificado y el hostname. |
+| `APP_ORIGIN` | Origen público exacto, por ejemplo `https://tasks.example.com`. Configurarlo si el proxy entrega a Next.js una URL interna diferente; en local se usa el origen de la petición. |
+| `TRUSTED_CLIENT_IP_HEADER` | Opcional. Nombre de una cabecera con una única IP que el proxy de entrada sobrescribe y valida. No usar una cabecera controlable por el cliente ni una lista `X-Forwarded-For`. Si no se configura, el límite de autenticación es global. |
 
 Las cadenas de Supabase están en **Project Settings → Database → Connection string**.
 

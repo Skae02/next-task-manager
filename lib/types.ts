@@ -34,6 +34,7 @@ export type TableSummary = {
   color: Color | null;
   createdAt: string;
   updatedAt: string;
+  completionColumnId: string | null;
   columnCount: number;
   taskCount: number;
 };
@@ -64,6 +65,7 @@ export type Task = {
   lastUpdateOn: string;
   /** Calendar date (YYYY-MM-DD), without a time. */
   endDate: string | null;
+  completedAt: string | null;
 };
 
 export type Column = {

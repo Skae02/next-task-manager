@@ -1,5 +1,6 @@
+import { setCompletionColumn } from "@/lib/task-completion";
 import { db } from "@/lib/db";
-import { handler, parseBody, requireUserId } from "@/lib/api";
+import { HttpError, handler, parseBody, requireUserId } from "@/lib/api";
 import { findOwnedTable } from "@/lib/ownership";
 import { tableUpdateSchema } from "@/lib/validation";
 import { taskInclude, taskOrder, toColumn, toTableBase } from "@/lib/serializers";
@@ -32,7 +33,18 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
   await findOwnedTable(userId, tableId);
   const data = await parseBody(request, tableUpdateSchema);
 
-  const table = await db.table.update({ where: { id: tableId }, data });
+  const table = await db.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "tables" WHERE id = ${tableId} FOR NO KEY UPDATE`;
+    const current = await tx.table.findUniqueOrThrow({ where: { id: tableId } });
+    if (data.completionColumnId !== undefined && data.completionColumnId !== current.completionColumnId) {
+      if (data.completionColumnId) {
+        const target = await tx.column.findFirst({ where: { id: data.completionColumnId, tableId } });
+        if (!target) throw new HttpError(422, "Datos inválidos", { completionColumnId: "Selecciona una columna de este tablero" });
+      }
+      await setCompletionColumn(tx, tableId, data.completionColumnId);
+    }
+    return tx.table.update({ where: { id: tableId }, data });
+  });
   return Response.json({ table: toTableBase(table) });
 });
 

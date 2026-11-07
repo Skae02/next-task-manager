@@ -2,10 +2,11 @@
 import { SignJWT, jwtVerify } from "jose";
 
 export const SESSION_COOKIE = "tm_session";
-const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
+export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 export type SessionPayload = {
   userId: string;
+  sessionId: string;
   /** Whether the user finished the second registration step. */
   profileComplete: boolean;
 };
@@ -22,6 +23,7 @@ export async function signSession(payload: SessionPayload) {
   return new SignJWT({ pc: payload.profileComplete })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.userId)
+    .setJti(payload.sessionId)
     .setIssuedAt()
     .setExpirationTime(`${SESSION_TTL_SECONDS}s`)
     .sign(secretKey());
@@ -35,8 +37,8 @@ export async function verifySession(
     const { payload } = await jwtVerify(token, secretKey(), {
       algorithms: ["HS256"],
     });
-    if (!payload.sub) return null;
-    return { userId: payload.sub, profileComplete: payload.pc === true };
+    if (!payload.sub || !payload.jti || typeof payload.exp !== "number") return null;
+    return { userId: payload.sub, sessionId: payload.jti, profileComplete: payload.pc === true };
   } catch {
     return null;
   }

@@ -8,7 +8,7 @@ import type { Color, PriorityId, TaskTagInput, Column, TableDetail, TableSummary
 type Status = "idle" | "loading" | "ready" | "error";
 
 export type TableInput = { title: string; description: string; color: Color | null };
-export type ColumnInput = TableInput;
+export type ColumnInput = TableInput & { isCompletion?: boolean };
 export type TaskInput = {
   endDate: string | null;
   title: string;
@@ -29,7 +29,7 @@ type BoardState = {
 
   loadTables: () => Promise<void>;
   createTable: (input: TableInput) => Promise<TableSummary>;
-  updateTable: (id: string, input: Partial<TableInput>) => Promise<void>;
+  updateTable: (id: string, input: Partial<TableInput> & { completionColumnId?: string | null }) => Promise<void>;
   deleteTable: (id: string) => Promise<void>;
 
   loadTable: (id: string) => Promise<void>;
@@ -74,7 +74,7 @@ function movesSettled() {
 export function placeTask(table: TableDetail, taskId: string, columnId: string, index: number): TableDetail {
   const found = findTask(table, taskId);
   if (!found) return table;
-  const moved = { ...found.task, columnId };
+  const moved = { ...found.task, columnId, completedAt: columnId === table.completionColumnId ? found.task.completedAt ?? new Date().toISOString() : null };
   return mapColumns(table, (column) => {
     const tasks = column.tasks.filter((t) => t.id !== taskId);
     if (column.id === columnId) tasks.splice(Math.min(index, tasks.length), 0, moved);
@@ -153,6 +153,7 @@ export const useBoardStore = create<BoardState>()((set, get) => {
     },
 
     updateTable: async (id, input) => {
+      await movesSettled();
       const { table } = await api<{ table: Omit<TableDetail, "columns"> }>(`/tables/${id}`, {
         method: "PATCH",
         body: input,
@@ -161,6 +162,7 @@ export const useBoardStore = create<BoardState>()((set, get) => {
         tables: s.tables.map((t) => (t.id === id ? { ...t, ...table } : t)),
         current: s.current?.id === id ? { ...s.current, ...table } : s.current,
       }));
+      if (input.completionColumnId !== undefined && get().current?.id === id) await get().loadTable(id);
     },
 
     deleteTable: async (id) => {
@@ -188,6 +190,7 @@ export const useBoardStore = create<BoardState>()((set, get) => {
     },
 
     createColumn: async (tableId, input) => {
+      await movesSettled();
       const { column } = await api<{ column: Column }>(`/tables/${tableId}/columns`, {
         method: "POST",
         body: input,
@@ -196,21 +199,32 @@ export const useBoardStore = create<BoardState>()((set, get) => {
         current: s.current?.id === tableId ? { ...s.current, columns: [...s.current.columns, column] } : s.current,
         tables: s.tables.map((t) => (t.id === tableId ? { ...t, columnCount: t.columnCount + 1 } : t)),
       }));
+      if (input.isCompletion !== undefined) {
+        if (get().current?.id === tableId) await get().loadTable(tableId);
+        await get().loadTables();
+      }
       return column;
     },
 
     updateColumn: async (id, input) => {
+      await movesSettled();
       const { column } = await api<{ column: Column }>(`/columns/${id}`, { method: "PATCH", body: input });
       set((s) => ({
         current: patchCurrent(s.current, (t) => mapColumns(t, (r) => (r.id === id ? column : r))),
       }));
+      if (input.isCompletion !== undefined) {
+        if (get().current?.id === column.tableId) await get().loadTable(column.tableId);
+        await get().loadTables();
+      }
     },
 
     deleteColumn: async (id) => {
+      await movesSettled();
       await api(`/columns/${id}`, { method: "DELETE" });
       set((s) => ({
-        current: patchCurrent(s.current, (t) => ({ ...t, columns: t.columns.filter((r) => r.id !== id) })),
+        current: patchCurrent(s.current, (t) => ({ ...t, completionColumnId: t.completionColumnId === id ? null : t.completionColumnId, columns: t.columns.filter((r) => r.id !== id) })),
       }));
+      await get().loadTables();
     },
 
     createTask: async (columnId, input) => {

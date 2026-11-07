@@ -34,7 +34,7 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
 
     // Read the current column under the lock: an earlier move may have just
     // changed it.
-    const current = await tx.task.findUnique({ where: { id: taskId }, select: { columnId: true } });
+    const current = await tx.task.findUnique({ where: { id: taskId }, select: { columnId: true, completedAt: true } });
     if (!current) throw notFound("Tarea no encontrada");
     const sourceId = current.columnId;
 
@@ -51,7 +51,11 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
     if (sourceId !== columnId) {
       result.set(sourceId, idsIn(sourceId));
     }
-    await tx.task.update({ where: { id: taskId }, data: { columnId, updatedAt: new Date() } });
+    const table = await tx.table.findUniqueOrThrow({ where: { id: tableId } });
+    await tx.task.update({ where: { id: taskId }, data: {
+      columnId, updatedAt: new Date(),
+      completedAt: table.completionColumnId === columnId ? current.completedAt ?? new Date() : null,
+    } });
 
     for (const ids of result.values()) {
       await tx.$executeRaw`

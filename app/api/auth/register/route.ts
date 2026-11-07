@@ -3,9 +3,11 @@ import { hashPassword } from "@/lib/auth/password";
 import { HttpError, handler, parseBody, setSessionCookie } from "@/lib/api";
 import { credentialsSchema } from "@/lib/validation";
 import { toPublicUser } from "@/lib/serializers";
+import { limitAuthTraffic } from "@/lib/auth/rate-limit";
 
 // Step 1 of registration: email + password. Step 2 is PATCH /api/users/me.
 export const POST = handler(async (request) => {
+  await limitAuthTraffic(request, "register");
   const { email, password } = await parseBody(request, credentialsSchema);
 
   const existing = await db.user.findUnique({ where: { email } });

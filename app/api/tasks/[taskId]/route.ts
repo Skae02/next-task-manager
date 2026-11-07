@@ -40,27 +40,34 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
 
   // Changing the column from the editor sends the task to the end of it.
   // Drag and drop uses PATCH /api/tasks/:taskId/move instead.
-  let position: number | undefined;
-  if (data.columnId && data.columnId !== current.columnId) {
-    const last = await db.task.findFirst({
-      where: { columnId: data.columnId },
-      orderBy: { position: "desc" },
-      select: { position: true },
-    });
-    position = (last?.position ?? -1) + 1;
-  }
+  const task = await db.$transaction(async (tx) => {
+    const tableId = current.column.tableId;
+    await tx.$queryRaw`SELECT id FROM "tables" WHERE id = ${tableId} FOR NO KEY UPDATE`;
+    const table = await tx.table.findUniqueOrThrow({ where: { id: tableId } });
+    const latest = await tx.task.findUniqueOrThrow({ where: { id: taskId } });
+    let position: number | undefined;
+    if (data.columnId && data.columnId !== latest.columnId) {
+      const last = await tx.task.findFirst({
+        where: { columnId: data.columnId },
+        orderBy: { position: "desc" },
+        select: { position: true },
+      });
+      position = (last?.position ?? -1) + 1;
+    }
 
-  const { tags, ...fields } = data;
-  const task = await db.task.update({
-    where: { id: taskId },
-    data: {
-      ...fields,
-      endDate: fields.endDate === undefined ? undefined : fields.endDate ? new Date(fields.endDate) : null,
-      updatedAt: new Date(),
-      position,
-      ...(tags !== undefined && { tags: { deleteMany: {}, create: tags.map((tag, position) => ({ ...tag, position })) } }),
-    },
-    include: taskInclude,
+    const { tags, ...fields } = data;
+    return tx.task.update({
+      where: { id: taskId },
+      data: {
+        ...fields,
+        completedAt: (fields.columnId ?? latest.columnId) === table.completionColumnId ? latest.completedAt ?? new Date() : null,
+        endDate: fields.endDate === undefined ? undefined : fields.endDate ? new Date(fields.endDate) : null,
+        updatedAt: new Date(),
+        position,
+        ...(tags !== undefined && { tags: { deleteMany: {}, create: tags.map((tag, position) => ({ ...tag, position })) } }),
+      },
+      include: taskInclude,
+    });
   });
   return Response.json({ task: toTask(task) });
 });

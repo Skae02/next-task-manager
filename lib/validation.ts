@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { COLORS, MAX_TASK_TAGS, PRIORITY_IDS } from "@/lib/types";
+import { fitsBcrypt } from "@/lib/security/password";
 
 const title = z.string().trim().min(1, "El título es obligatorio").max(120);
 const description = z.string().trim().max(5000);
@@ -10,12 +11,14 @@ export const credentialsSchema = z.object({
   password: z
     .string()
     .min(8, "La contraseña debe tener al menos 8 caracteres")
-    .max(72, "La contraseña no puede superar 72 caracteres"),
+    .max(72, "La contraseña no puede superar 72 caracteres")
+    .refine(fitsBcrypt, "La contraseña no puede superar 72 bytes UTF-8"),
 });
 
 export const loginSchema = z.object({
   email: z.email("Correo inválido").trim().toLowerCase(),
-  password: z.string().min(1, "Ingresa tu contraseña"),
+  password: z.string().min(1, "Ingresa tu contraseña").max(72)
+    .refine(fitsBcrypt, "La contraseña no puede superar 72 bytes UTF-8"),
 });
 
 export const profileSchema = z.object({
@@ -40,12 +43,12 @@ export const tableCreateSchema = z.object({
   color: color.optional().default(null),
 });
 export const tableUpdateSchema = z
-  .object({ title, description, color })
+  .object({ title, description, color, completionColumnId: z.string().min(1).nullable() })
   .partial();
 
-export const columnCreateSchema = tableCreateSchema;
+export const columnCreateSchema = tableCreateSchema.extend({ isCompletion: z.boolean().optional().default(false) });
 export const columnUpdateSchema = z
-  .object({ title, description, color, position: z.int().min(0) })
+  .object({ title, description, color, position: z.int().min(0), isCompletion: z.boolean() })
   .partial();
 
 export const taskTagsSchema = z.array(z.object({
