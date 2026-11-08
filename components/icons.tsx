@@ -45,6 +45,12 @@ export const BoardIcon = (p: IconProps) => (
 export const LogoutIcon = (p: IconProps) => (
   <Icon {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></Icon>
 );
+export const SunIcon = (p: IconProps) => (
+  <Icon {...p}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42" /></Icon>
+);
+export const MoonIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M20.9 13.3A9 9 0 0 1 10.7 3.1a9 9 0 1 0 10.2 10.2Z" /></Icon>
+);
 export const CheckIcon = (p: IconProps) => (
   <Icon {...p}><path d="M20 6 9 17l-5-5" /></Icon>
 );
