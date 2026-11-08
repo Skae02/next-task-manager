@@ -51,7 +51,7 @@ export function Button({
       disabled={disabled || loading}
       className={cx(
         "inline-flex items-center font-medium transition-colors select-none outline-none",
-        "focus-visible:ring-4 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none",
+        "focus-visible:ring-4 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none cursor-pointer",
         buttonVariants[variant],
         buttonSizes[size],
         className,
