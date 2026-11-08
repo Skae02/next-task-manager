@@ -1,21 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { LogoutIcon } from "@/components/icons";
 import { Avatar, Button } from "@/components/ui";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { ThemeToggle } from "@/components/app/theme-toggle";
-import { useIsDark } from "@/utils/use-theme";
-import ST_NAVBAR_LOGO_DARK from "@/assets/ST_NAVBAR_LOGO_DARK.webp";
-import ST_NAVBAR_LOGO from "@/assets/ST_NAVBAR_LOGO.webp";
+import { BrandLogo } from "@/components/app/brand-logo";
 
 
 export function TopBar() {
   const router = useRouter();
-  const dark = useIsDark();
   const { user, status, fetchMe, logout } = useAuthStore();
 
   useEffect(() => {
@@ -31,7 +27,7 @@ export function TopBar() {
     <header className="sticky top-0 z-30 border-b border-line bg-bg/80 backdrop-blur-xl">
       <div className="mx-auto flex h-13 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link href="/tables" className="flex items-center gap-2 font-semibold tracking-tight">
-          <Image src={dark ? ST_NAVBAR_LOGO_DARK : ST_NAVBAR_LOGO} width={120} height={40} alt="Simple Task Logo"/>
+          <BrandLogo />
         </Link>
 
         <div className="flex items-center gap-2">
